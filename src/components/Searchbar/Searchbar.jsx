@@ -1,73 +1,68 @@
-import React from 'react';
-import { Formik, Form, Field } from 'formik';
-import styled from '@emotion/styled';
-import { Header, Button } from './Searchbar.styled';
-import { ReactComponent as FindIcon } from '../../images/search-thing.svg';
-import { toast } from 'react-toastify';
+import { Component } from "react";
+import { ReactComponent as ImSearch } from "../../images/search-thing.svg"
 import PropTypes from 'prop-types';
+import { SearchbarWrapper } from "./Searchbar.styled";
 
-const SearchForm = styled(Form)`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 600px;
-  background-color: #fff;
-  border-radius: 3px;
-  overflow: hidden;
-`;
 
-const Input = styled(Field)`
-  display: inline-block;
-  width: 100%;
-  font: inherit;
-  font-size: 20px;
-  border: none;
-  outline: none;
-  padding-left: 4px;
-  padding-right: 4px;
-`;
-
-const Searchbar = ({ onSubmit }) => {
-  const handleSubmit = (values, actions) => {
-    const { newQuery } = values;
-
-    if (newQuery.trim().length === 0) {
-      toast.error('Please enter a value');
-      actions.setSubmitting(false);
-      return;
+export class SearchBar extends Component {
+    state = {
+        imageName: '',
     }
 
-    onSubmit(newQuery);
-    actions.setSubmitting(false);
-    actions.resetForm();
-  };
+    handleSubmit = (e) => {
 
-  return (
-    <Header>
-      <Formik initialValues={{ newQuery: '' }} onSubmit={handleSubmit}>
-        {({ isSubmitting }) => {
-          return (
-            <SearchForm>
-              <Button type="submit" disabled={isSubmitting}>
-                <FindIcon width="24" height="24" fill="#fff " />
-              </Button>
-              <Input
-                name="newQuery"
-                type="text"
-                autoComplete="off"
-                autoFocus
-                placeholder="Search images and photos"
-              />
-            </SearchForm>
-          );
-        }}
-      </Formik>
-    </Header>
-  );
+        const { imageName } = this.state
+        const { onSubmit } = this.props
+ 
+        e.preventDefault();
+
+        if (imageName.trim() === '') {
+            alert('Enter something')
+            return
+        }
+
+        onSubmit(imageName)
+        
+        this.setState({
+            imageName: '',
+        })
+    }
+
+    handleNameChange = (e) => {
+        this.setState({
+            imageName: e.currentTarget.value,
+        })
+    };
+
+
+
+
+    render() {
+        const { imageName } = this.state;
+
+        return (
+            <SearchbarWrapper>
+                <form className="SearchForm" onSubmit={this.handleSubmit}>
+                    <button type="submit" className="SearchForm-button">
+                        <span className="SearchForm-button-label"><ImSearch/></span>
+                    </button>
+
+                    <input
+                        onChange={this.handleNameChange}
+                        value={imageName}
+                        className="SearchForm-input"
+                        type="text"
+                        autoComplete="off"
+                        autoFocus
+                        placeholder="Search images and photos"
+                    />
+                </form>
+            </SearchbarWrapper>
+        );
+    };
+    
 };
 
-export default Searchbar;
-
-Searchbar.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
+SearchBar.propTypes = {
+    onSubmit: PropTypes.func.isRequired,
+}

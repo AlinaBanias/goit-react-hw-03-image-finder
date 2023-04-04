@@ -1,57 +1,76 @@
-import React, { Component } from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { Component } from "react";
+import { getImages } from "../services/api";
+import { SearchBar } from "./Searchbar/Searchbar";
+import { ImageGallery } from "./ImageGallery/ImageGallery";
+import { LoadMoreButton } from "./Button/Button";
+import { Loader } from "./Loader/Loader";
 
-import css from './App.module.css';
-import Searchbar from './Searchbar';
-import ImageGallery from './ImageGallery';
-import Modal from './Modal';
 
-export class App extends Component {
+
+export class App extends Component  {
+
   state = {
-    query: '',
-    largeImageURL: '',
+    imageName: '',
+    gallery: [],
+    loading: false,
+    page: 1,
+    totalResult: 0,
   };
 
-  onSubmit = newQuery => {
-    this.setState({ query: newQuery });
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.page !== this.state.page ||
+        prevState.imageName !== this.state.imageName) {
+        
+        this.setState({ loading: true });
+
+        getImages(this.state.imageName, this.state.page)
+          .then(response => {
+                if (response.data.hits.length !== 0) {
+                  this.setState({ gallery: [...this.state.gallery, ...response.data.hits], totalResult: response.data.total })
+                }
+            })
+            .catch(error => console.log(error))
+          .finally(() => this.setState({ loading: false })
+
+          );
+        }; 
   };
 
-  handleImageClick = image => {
-    this.setState({ largeImageURL: image });
+  handleFormSubmit = imageName => {
+    this.setState({
+      imageName,
+    });
+    
+    this.setState(prevState => {
+      if (prevState.imageName !== this.state.imageName) {
+        return ({ gallery: [], page: 1 })
+      };
+    });
   };
 
-  closeModal = () => {
-    this.setState({ largeImageURL: '' });
+  getNextPage = () => {
+    this.setState((prevState) => ({ page: prevState.page + 1 }));
+    
+    setTimeout(() => window.scrollTo({
+      top: document.body.scrollHeight,
+      behavior: "smooth",
+    }), 500)
+
+
   };
+
+
 
   render() {
-    const { query, largeImageURL } = this.state;
-
     return (
-      <div className={css.App}>
-        <Searchbar onSubmit={this.onSubmit} />
-        {query && (
-          <ImageGallery query={query} onImageClick={this.handleImageClick} />
-        )}
-        {largeImageURL && (
-          <Modal closeModal={this.closeModal}>
-            <img src={largeImageURL} alt="XXX" />
-          </Modal>
-        )}
-        <ToastContainer
-          position="top-center"
-          autoClose={1000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
+      <div className="App">
+        <SearchBar onSubmit={this.handleFormSubmit} />
+        <ImageGallery
+          gallery={this.state.gallery}
+          page={this.state.page}/>
+        <Loader loading={this.state.loading}/>
+        {this.state.gallery.length >= 1 && this.state.gallery.length < this.state.totalResult &&  <LoadMoreButton getNextPage={this.getNextPage} />}
       </div>
     );
-  }
-}
+  };
+};
