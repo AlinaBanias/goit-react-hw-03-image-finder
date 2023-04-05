@@ -39,24 +39,14 @@ export class App extends Component  {
   handleFormSubmit = imageName => {
     this.setState({
       imageName,
+      gallery: [],
+      page: 1,
     });
     
-    this.setState(prevState => {
-      if (prevState.imageName !== this.state.imageName) {
-        return ({ gallery: [], page: 1 })
-      };
-    });
   };
 
   getNextPage = () => {
     this.setState((prevState) => ({ page: prevState.page + 1 }));
-    
-    setTimeout(() => window.scrollTo({
-      top: document.body.scrollHeight,
-      behavior: "smooth",
-    }), 500)
-
-
   };
 
 
