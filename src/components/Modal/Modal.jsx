@@ -22,13 +22,18 @@ export class Modal extends Component {
                 this.props.toggleModal()
             }
     }
+    handleClickBackdrop = e => {
+        if(e.target !== e.currentTarget) {
+        this.props.toggleModal();
+        }
+    }
 
 
     render() {
         const {largeImageURL} = this.props
 
         return createPortal(
-            <ModalWrapper>
+            <ModalWrapper onClick={this.handleClickBackdrop}>
                 <div className="Modal">
                     <img src={largeImageURL} alt="" />
                 </div>
